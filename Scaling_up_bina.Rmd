@@ -1,0 +1,648 @@
+---
+title: "Day 2 - Scaling up your computations"
+format: html
+---
+
+# Introduction
+
+The goal of this session is to collaboratively solve a series of challenges that will introduce you to practices that enable you scale up your computations.
+
+The data
+
+- (Re)introduce the Penguins data
+
+A common challenge: Repeating things
+
+- split, apply, combine
+
+Several tools that can help us apply this workflow
+
+- tidyverse: tables, group_by, summarise/mutate
+- map: for lists / vectors
+- ggplot: facets 
+- functions
+
+
+## Load libraries
+
+We will primarily be using packages from the {tidyverse}, feel free to add more packages here to help solve the challenges.
+
+```{r}
+library(tidyverse)
+dir.create("output")
+```
+
+
+## Challenge 0 - Loading data from many files
+
+We have just returned from an expedition from Anatarcia and collected *a lot* of data from multiple species of penguins. Sometimes "we" counted the penguins.  Sometimes we didn't.  We recorded data for each species in separate `.csv` files but **we need to combine these into one large dataframe for analyses. How can we do this programmatically?** 
+
+
+In words, describe what are the steps to solve the challenge: 
+
+- 
+- 
+- 
+
+How would you solve this problem using existing knowledge: 
+
+-
+-
+-
+
+Try solving this in R using new skills:
+
+```{r, learner-solutions}
+
+penguins_combined<-list.files("data/penguin_distributions/",
+                              pattern=".csv", full.names = TRUE)|>
+  map(read_csv, show_col_types=FALSE) |>
+  list_rbind()
+
+```
+
+Demonstrator solutions: 
+
+```{r, instructor-solutions}
+
+
+```
+
+## Challenge 1 - Import common names
+
+We only have latin names for each species of penguin but we need common names for when we report our results to stakeholders. Our collaborator started compiling common names in a separate `.csv` in the `data/` folder. **Compile the common names for the remaining taxa and join these into the dataframe `penguins_combined`. You may need to import the `penguins_combined.csv` into R first. 
+
+In words, describe what are the steps to solve the challenge: 
+
+
+
+```{r}
+
+
+penguins_task2<-left_join(penguins_combined, penguin_common_names, 
+                          by=c('species'='scientific_name'))
+
+relocate(penguin_common_names, .after=speceies)
+```
+
+
+- 
+- 
+- 
+
+How would you solve this problem using existing knowledge: 
+
+-
+-
+-
+
+Try solving this in R using new skills:
+
+```{r, learner-solutions}
+
+```
+
+Demonstrator solutions: 
+
+```{r, instructor-solutions}
+
+
+```
+
+
+## Challenge 2 - Add n_records as a column
+
+For your analysis, you need to calculate the total number of records available for each species, and add that as a new column in your data.
+
+In words, describe what are the steps to solve the challenge: 
+task2 <- data %>%
+  left_join(species_counts, by = "species")
+
+```{r}
+species_counts <- penguins_combined %>%
+  count(species, name = "n") 
+penguins_combined
+
+
+```
+
+
+- 
+- 
+- 
+
+How would you solve this problem using existing knowledge: 
+
+-
+-
+-
+```{r}
+
+
+```
+
+Try solving this in R using new skills:
+
+```{r, learner-solutions}
+
+```
+
+Demonstrator solutions: 
+
+```{r, instructor-solutions}
+
+
+```
+
+
+## Challenge 3 - Determine the top 3 most recorded taxa
+
+We need to know which are the top 3 species that we have the the most records. Can you figure which species are these?
+
+In words, describe what are the steps to solve the challenge:
+
+Calculate Species Counts: Use the count function to calculate the total number of records available for each species.
+Arrange Species by Count: Use the arrange function to sort the species by their counts in descending order.
+Select Top 3 Species: Use the head function to select the top 3 species with the most records.
+
+```{r}
+summarise(penguins_combined)        
+```
+
+```{r}
+species_counts <- penguins_combined %>%
+  count(species) %>%     
+  arrange(desc(n))
+
+task3<- head(species_counts, 3)
+
+```
+
+
+- 
+- 
+- 
+
+How would you solve this problem using existing knowledge: 
+
+-
+-
+-
+
+Try solving this in R using new skills:
+
+```{r, learner-solutions}
+
+```
+
+Demonstrator solutions: 
+
+```{r, instructor-solutions}
+
+
+```
+
+
+## Challenge 4 - Excluding rogue data
+
+We need to clean the data a little before we analyse it. Clean the data so that we have
+
+- Individual counts > 0
+- Observations from iNaturalist and eBird using the `institutionCode` (the code for eBird is confusingly "CLO"; the code for iNaturalist is more sensibly "iNaturalist")
+
+Export this dataset as a `.csv`
+
+read the data first 
+give instruction to keep greater than 0. 
+isolate the date from two sources only.
+from penguins_combined, clean the data and filter the data 
+
+Use the filter function to keep only the rows where the individual count is greater than 0.
+filter(individualCount > 0) removes rows where the individualCount is less than or equal to 0, ensuring only valid observations are kept.
+Filter Observations from iNaturalist and eBird: Further filter the data to include only observations from iNaturalist and eBird using the institutionCode column.
+filter(institutionCode %in% c("CLO", "iNaturalist")) keeps only the rows where the institutionCode is either "CLO" (eBird) or "iNaturalist", excluding observations from other sources.
+
+
+  
+```{r} 
+cleaned_pen_data <- penguins_combined |>
+filter(individualCount > 0) |> 
+filter(institutionCode %in% c("CLO", "iNaturalist"))
+  
+
+write.csv(cleaned_pen_data, "cleaned_observations.csv", row.names = FALSE) 
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+In words, describe what are the steps to solve the challenge: 
+
+- 
+- 
+- 
+
+How would you solve this problem using existing knowledge: 
+
+-
+-
+-
+
+Try solving this in R using new skills:
+
+```{r, learner-solutions}
+
+```
+
+Demonstrator solutions: 
+
+```{r, instructor-solutions}
+
+
+```
+
+
+## Challenge 5 - Add Size information
+
+We need to get compute the average bill and flipper dimensions using the `penguin_sizes` data and nd merge this into the `penguins_combined` dataset. You name need to wrangle/create the penguin names a little
+
+In words, describe what are the steps to solve the challenge: 
+
+- 
+- 
+- 
+
+How would you solve this problem using existing knowledge: 
+
+-
+-
+-
+
+Try solving this in R using new skills:
+
+```{r, learner-solutions}
+
+```
+
+Demonstrator solutions: 
+
+```{r, instructor-solutions}
+
+
+```
+
+
+## Challenge 6 - Export data by year
+
+Your collaborator at the museum requires the giant penguin dataset to be broken down and saved as `.csv` by year. Solve this challenge with code!!
+
+In words, describe what are the steps to solve the challenge: 
+
+- 
+- 
+- 
+
+How would you solve this problem using existing knowledge: 
+
+-
+-
+-
+
+Try solving this in R using new skills:
+
+```{r, learner-solutions}
+
+```
+
+Demonstrator solutions: 
+
+```{r, instructor-solutions}
+
+
+```
+
+
+## Challenge 7 - How much do different penguin species migrate
+
+Your penguin collaborator knows from natural history knowledge that some penguins migrate and others don't but no one has ever quantified this.  Calculate the difference between the summer median latitude and the winter median latitude for each species.  (Median is more robust to outliers so that's more appropriate here compared to the mean.) Note there may be species with missing data for certain seasons and this may lead to missing species in the final plot. 
+
+Make a plot of species by degrees latitude migrated.    
+
+In words, describe what are the steps to solve the challenge: 
+
+- 
+- 
+- 
+
+How would you solve this problem using existing knowledge: 
+
+-
+-
+-
+
+Try solving this in R using new skills:
+
+```{r, learner-solutions}
+
+```
+
+
+Demonstrator solutions: 
+
+```{r, instructor-solutions}
+
+
+```
+
+
+## Challenge 8 - Lots of descriptive statistics
+
+We need to report on some descriptive statistics of our penguin study. We need to know the following:
+
+- How many different genera are represented in our dataset
+- How many different species do we have for each genera
+- Calculate the proportion of points from iNaturalist and eBird using the institutionCode (the code for eBird is confusingly "CLO"; the code for iNaturalist is more sensibly "iNaturalist")
+- How many records by species
+- How many records by year
+- How many records by country code
+- How many records by basis of record
+
+
+In words, describe what are the steps to solve the challenge: 
+
+- 
+- 
+- 
+
+How would you solve this problem using existing knowledge: 
+
+-
+-
+-
+
+Try solving this in R using new skills:
+
+```{r, learner-solutions}
+
+```
+
+Demonstrator solutions: 
+
+```{r, instructor-solutions}
+
+
+```
+
+
+## Challenge 9 - Facet plot and export plots
+
+We want some good visualisations of our data.
+
+a. Make a multipanel plot of global distribution of penguins, with a panel for each genus
+b. Make a multipanel plot of by month
+c. Make a multipanel plot of by genus on the y-axis and individual count (<10 or >=10) on the x-axis
+
+In words, describe what are the steps to solve the challenge: 
+
+multipanel plot that displays the global distribution of penguin observations by genus
+
+Load Necessary Libraries:
+Prepare the World Map Data:
+Start the ggplot object, 
+Add the World Map Polygon
+geom_point: Adds points to the plot, representing penguin observations.
+data = penguins_combined: Uses the penguins_combined dataset.
+aes(x = decimalLongitude, y = decimalLatitude): Maps longitude and latitude for penguin observations.
+theme_minimal(): Applies a minimal theme to the plot, giving it a clean and simple appearance.
+Fix the Aspect Ratio:
+coord_fixed() 
+Creates separate panels (facets) for each genus in the 
+
+```{r}
+library(ggplot2)
+library(maps)
+world_map <- map_data("world")
+
+#p <-
+  ggplot() +
+  geom_polygon(data = world_map, aes(x = long, y = lat, group = group), fill = "pink", color = "blue") +
+
+  
+geom_point(data = penguins_combined, aes(x = decimalLongitude, y = decimalLatitude))+
+theme_minimal() +
+  coord_fixed() +
+  
+facet_wrap(~ genus)
+
+  
+
+
+
+```
+
+- Make a multipanel plot of by month
+- 
+- 
+```{r}
+ggplot() +
+  geom_polygon(data = world_map, aes(x = long, y = lat, group = group), fill = "pink", color = "blue") +
+
+  
+geom_point(data = penguins_combined, aes(x = decimalLongitude, y = decimalLatitude))+
+theme_minimal() +
+  coord_fixed() +
+  
+facet_wrap(~ month)
+```
+
+
+
+
+
+
+c. Make a multipanel plot of by genus on the y-axis and individual count (<10 or >=10) on the x-axis
+`
+Categorize Individual Counts:
+mutate(count_category = ifelse(individualCount < 10, "<10", ">=10")): Adds a new column count_category to the penguins_combined dataset.
+ifelse(individualCount < 10, "<10", ">=10"): Creates a new category based on whether individualCount is less than 10 or greater than or equal to 10.
+aes(x = count_category, fill = genus): Sets the aesthetic mappings, with count_category on the x-axis and bars filled by genus
+Adds bar geometry to the plot. By default, geom_bar() counts the number of occurrences of each count_category
+Creates separate panels (facets) for each genus.
+scales = "free_y": Allows each facet to have its own y-axis scale, making it easier to see variations within each genus.
+theme_minimal(): Applies a minimal theme to the plot for a clean and simple appearance.
+
+```
+
+
+```{r}
+penguins_combined <- penguins_combined %>%
+  mutate(count_category = ifelse(individualCount < 10, "<10", ">=10"))
+ggplot(penguins_combined, aes(x = count_category,fill = genus)) +
+  geom_bar() +
+  facet_wrap(~ genus, scales = "free_y") +
+  theme_minimal()+
+labs(
+    title = "Distribution of Individual Counts by Genus",
+    x = "Individual Count Category",
+    y = "Count",
+    fill = "Genus"
+  ) +
+  theme(
+    plot.title = element_text(size = 15, face = "bold", hjust = 0.5),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10),
+    strip.text = element_text(size = 10)
+  )
+```
+
+
+this one is the one i ran
+```{r}
+penguins_combined <- penguins_combined %>%
+  filter(!is.na(individualCount) & !is.na(genus)) %>%
+  mutate(count_category = ifelse(individualCount < 10, "<10", ">=10"))
+ggplot(penguins_combined, aes(x = count_category,fill = genus)) +
+  geom_bar() +
+  facet_wrap(~ genus, scales = "free_y") +
+  theme_minimal()+
+labs(
+    title = "Distribution of Individual Counts by Genus",
+    x = "Individual Count Category",
+    y = "Count",
+    fill = "Genus"
+  ) +
+  theme(
+    plot.title = element_text(size = 15, face = "bold", hjust = 0.5),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10),
+    strip.text = element_text(size = 10)
+  )
+```
+
+
+
+
+```{r}
+
+  ) 
+  
+-How would you solve this problem using existing knowledge: 
+-
+
+Try solving this in R using new skills:
+
+```{r, learner-solutions}
+
+```
+
+Demonstrator solutions: 
+
+```{r, instructor-solutions}
+  
+```
+
+
+## Challenge 10 - Plot country x species presence-absence
+
+You want to make a graph of country x species, colouring for each species if it present in each country.
+
+In words, describe what are the steps to solve the challenge: 
+
+- 
+- 
+- 
+
+How would you solve this problem using existing knowledge: 
+
+-
+-
+-
+
+Try solving this in R using new skills:
+
+```{r, learner-solutions}
+
+```
+
+Demonstrator solutions: 
+
+```{r, instructor-solutions}
+
+
+```
+
+
+## Challenge 11 - Make a lot of maps
+
+Make a folder and make 17 pdfs, one for each penguin species, with a map of that species.  Make the title of the plot include both the common name of the speices and the scientific name.  Make the file name the scientific name.
+
+In words, describe what are the steps to solve the challenge: 
+
+- 
+- 
+- 
+
+How would you solve this problem using existing knowledge: 
+
+-
+-
+-
+
+
+Now let's use our new skills to make lots of plots!
+
+```{r}
+
+```
+
+Demonstrator solutions: 
+
+```{r, instructor-solutions}
+
+
+```
+
+
+## Challenge 12 - Fit lots of models
+
+In your analyses, sometimes you need to fit one complex model, other times you might be fitting many seperate models. How do we do that efficiently?
+
+You been asked to fit a linear model between log_count and latitude, for each speces. Fit the models and extract the r2 for each model fit.
+
+In words, describe what are the steps to solve the challenge: 
+
+- 
+- 
+- 
+
+How would you solve this problem using existing knowledge: 
+
+-
+-
+-
+
+Try solving this in R using new skills:
+
+```{r, learner-solutions}
+
+```
+
+Demonstrator solutions: 
+
+```{r, instructor-solutions}
+
+
+```
+
+
+
+## Challenge 13 - Combining nest and map
